@@ -1,2 +1,4 @@
 github.com/SebastiaanWouters/verigo v0.1.9 h1:fYYYGIbDgBfbtSPnpv07vt+Lv5j1Us+9sehl6MQ4KW0=
 github.com/SebastiaanWouters/verigo v0.1.9/go.mod h1:LwwpF3GmCdxn65n6HbW7PuaDSCIfl9WrgVYdCkgDWBU=
+github.com/SebastiaanWouters/verigo v0.2.0 h1:Vf0tslnOXpHUqei+r72R7ckl0NzocietA8tMP510Ngk=
+github.com/SebastiaanWouters/verigo v0.2.0/go.mod h1:LwwpF3GmCdxn65n6HbW7PuaDSCIfl9WrgVYdCkgDWBU=
