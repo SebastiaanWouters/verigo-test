@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -61,7 +63,7 @@ type testProgram struct {
 }
 
 func main() {
-	ops := flag.Int("ops", 100000, "# of operations per run")
+	ops := flag.Int("ops", 1000000, "# of operations per run")
 	runs := flag.Int("runs", 10, "# of runs")
 	flag.Parse()
 
@@ -76,10 +78,12 @@ func main() {
 
 	f.Close()
 
+	benchmark_scripts(100)
+	benchmark(*runs, *ops)
 	benchmark_normal(*runs, *ops)
 	benchmark_middle(*runs, *ops)
 	benchmark_simple(*runs, *ops)
-	benchmark(*runs, *ops)
+
 }
 
 func opChanMonitor(c chan int) {
@@ -141,6 +145,40 @@ func benchmark_normal(runs int, ops int) {
 		elapsed += time.Since(start).Microseconds()
 		writeTofile(ops, "multiplication", elapsed, "_normal")
 
+	}
+
+}
+
+func benchmark_scripts(runs int) {
+	opChan := make(chan int)
+	rChan := make(chan object.Result)
+	go opChanMonitor(opChan)
+	go rChanMonitor(rChan)
+
+	usefulString := ReadVGFile("../useful.vg")
+	l1 := lexer.New(usefulString)
+	p1 := parser.New(l1)
+	program1 := p1.ParseProgram()
+	env1 := object.NewEnvironment()
+
+	attackerString := ReadVGFile("../attacker.vg")
+	l2 := lexer.New(attackerString)
+	p2 := parser.New(l2)
+	program2 := p2.ParseProgram()
+	env2 := object.NewEnvironment()
+
+	for i := 0; i <= runs; i++ {
+		start1 := time.Now()
+		repl.EvalParsed(program1, env1, rChan, opChan)
+		elapsed1 := time.Since(start1).Microseconds()
+		writeTofile(100000, "useful", elapsed1, "_scripts")
+	}
+
+	for i := 0; i <= runs; i++ {
+		start2 := time.Now()
+		repl.EvalParsed(program2, env2, rChan, opChan)
+		elapsed2 := time.Since(start2).Microseconds()
+		writeTofile(100000, "attacker", elapsed2, "_scripts")
 	}
 
 }
@@ -375,4 +413,13 @@ func generatePrefixOp(operator string, args int, argtypes []object.ObjectType) s
 	}
 	op += ")"
 	return op
+}
+
+func ReadVGFile(filename string) string {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		log.Fatalf("Unable to read file: %v", err)
+	}
+
+	return string(data)
 }

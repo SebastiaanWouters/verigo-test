@@ -1,0 +1,3 @@
+for (let x = 10000; x < 1100000; let x = x + 1) {
+   isPrime(x)
+}

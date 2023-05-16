@@ -1,0 +1,5 @@
+operation,amount,time,weights
+addition,100000.0,25.0,1.0
+division,100000.0,25.0,1.0
+multiplication,100000.0,25.0,1.0
+substraction,100000.0,25.0,1.0
