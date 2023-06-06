@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -63,8 +64,8 @@ type testProgram struct {
 }
 
 func main() {
-	ops := flag.Int("ops", 1000000, "# of operations per run")
-	runs := flag.Int("runs", 10, "# of runs")
+	//ops := flag.Int("ops", 10000000, "# of operations per run")
+	runs := flag.Int("runs", 50, "# of runs")
 	flag.Parse()
 
 	f, err := os.Create("results.csv")
@@ -78,11 +79,11 @@ func main() {
 
 	f.Close()
 
-	benchmark_scripts(100)
-	benchmark(*runs, *ops)
-	benchmark_normal(*runs, *ops)
-	benchmark_middle(*runs, *ops)
-	benchmark_simple(*runs, *ops)
+	//benchmark_normal(*runs, 100000000)
+	benchmark_scripts(*runs)
+	// benchmark(*runs, *ops)
+	// benchmark_middle(*runs, *ops)
+	// benchmark_simple(*runs, *ops)
 
 }
 
@@ -112,7 +113,7 @@ func writeTofile(amount int, operation string, duration int64, fileName string) 
 }
 
 func benchmark_normal(runs int, ops int) {
-	for r := 0; r < runs; r++ {
+	for r := 0; r < runs*2; r++ {
 		var elapsed int64 = 0
 		start := time.Now()
 		for o := 0; o < ops; o++ {
@@ -145,6 +146,77 @@ func benchmark_normal(runs int, ops int) {
 		elapsed += time.Since(start).Microseconds()
 		writeTofile(ops, "multiplication", elapsed, "_normal")
 
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = o >= 30
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "greater than", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = o <= 30
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "smaller than", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = math.Sqrt(float64(o))
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "sqrt", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = math.Pow(float64(o), 4)
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "pow", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = math.Sin(float64(o))
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "sin", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = math.Tan(float64(o))
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "tan", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = "test" + "ing"
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "concat", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = o == o
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "equals", elapsed, "_normal")
+
+		elapsed = 0
+		start = time.Now()
+		for o := 0; o < ops; o++ {
+			_ = o != o
+		}
+		elapsed += time.Since(start).Microseconds()
+		writeTofile(ops, "not equals", elapsed, "_normal")
 	}
 
 }
@@ -167,19 +239,24 @@ func benchmark_scripts(runs int) {
 	program2 := p2.ParseProgram()
 	env2 := object.NewEnvironment()
 
-	for i := 0; i <= runs; i++ {
+	for j := 0; j < 2; j++ {
+		for i := 0; i < runs; i++ {
 		start1 := time.Now()
 		repl.EvalParsed(program1, env1, rChan, opChan)
 		elapsed1 := time.Since(start1).Microseconds()
-		writeTofile(100000, "useful", elapsed1, "_scripts")
+		writeTofile(10000000, "useful", elapsed1, "_scripts")
+		fmt.Println("Useful script evaluated ", i)
 	}
 
-	for i := 0; i <= runs; i++ {
+	for i := 0; i < runs; i++ {
 		start2 := time.Now()
 		repl.EvalParsed(program2, env2, rChan, opChan)
 		elapsed2 := time.Since(start2).Microseconds()
-		writeTofile(100000, "attacker", elapsed2, "_scripts")
+		writeTofile(10000000, "attacker", elapsed2, "_scripts")
+		fmt.Println("Attacker script evaluated ", i)
 	}
+	}
+	
 
 }
 
@@ -221,8 +298,9 @@ func benchmark(runs int, ops int) {
 				repl.EvalParsed(program, env, rChan, opChan)
 				elapsed := time.Since(start).Microseconds()
 				writeTofile(ops, prog.Operation, elapsed, "")
+				fmt.Println(prog.Operation + " evaluated", i)
 			}
-			fmt.Println(prog.Operation + " evaluated")
+			fmt.Println(prog.Operation + " evaluated fully")
 
 		}
 	}
